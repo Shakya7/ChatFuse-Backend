@@ -70,8 +70,6 @@ exports.logout=async(req,res)=>{
             httpOnly:true,
             secure:true,
             sameSite:"none"
-            //domain:"localhost",
-            //path: '/',
         };
         res.cookie("jwt","null",cookieOptions);
         res.clearCookie('jwt');
