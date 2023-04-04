@@ -73,7 +73,6 @@ exports.logout=async(req,res)=>{
             //domain:"localhost",
             //path: '/',
         };
-        console.log("Logging out");
         res.cookie("jwt","null",cookieOptions);
         res.clearCookie('jwt');
         res.status(200).json({
