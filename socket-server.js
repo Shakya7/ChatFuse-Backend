@@ -12,9 +12,26 @@ const io=socketio(server,{
     }
 });
 
+/*
+
+io.on("connection",(socket)=>{
+
+    Emitting events ways:
+
+    1) socket.emit(".....")  ------>only to the single client that is connected to socket server (in one's own browser only)
+
+    2) socket.broadcast.emit(".....") --->to all the clients, except the single client
+
+    3) io.emit(".....")  ------> to all the clients
+})
+
+
+*/
+
 io.on("connection",(socket)=>{
     console.log("A user logged in now");
     console.log(socket.id);
+    io.emit("welcome-message",`${socket.id} joined the chat`);
     //socket.emit("message","Welcome to chat app");
     //socket.broadcast.emit("user_online",`${socket.id}`);
     //io.emit("load_online_frnds",io.engine.clientsCount);
