@@ -1,6 +1,7 @@
 const User=require("../models/userModel");
 const bcrypt=require("bcryptjs");
 const jwt=require("jsonwebtoken");
+const FriendRequest=require("../models/friendRequestModel");
 
 exports.getProfileData=async(req,res)=>{
     try{
@@ -60,6 +61,39 @@ exports.findUsers=async(req,res)=>{
             users
         })
 
+    }catch(err){
+        res.status(400).json({
+            status:"failed",
+            message: err.message
+        })
+    }
+}
+
+// API for getting the users to whom user has sent friend requests
+exports.getFriendRequestedUsers=async(req,res)=>{
+    try{
+        let users= await FriendRequest.find({sender:req.body.profileID}).populate("receiver","name email");
+        res.status(200).json({
+            status:"success",
+            users
+        })
+
+    }catch(err){
+        res.status(400).json({
+            status:"failed",
+            message: err.message
+        })
+    }
+}
+
+// API for getting the users who has sent the friend requests to the user
+exports.getUsersWhoSentRequests=async(req, res)=>{
+    try{
+        let users=await FriendRequest.find({receiver:req.body.profileID}).populate("sender","name email")
+        res.status(200).json({
+            status:"success",
+            users
+        })
     }catch(err){
         res.status(400).json({
             status:"failed",

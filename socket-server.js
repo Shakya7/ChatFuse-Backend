@@ -1,6 +1,8 @@
 const socketio=require("socket.io");
 const app=require("./app");
 const http=require("http");
+const FriendRequest=require("./models/friendRequestModel");
+const User=require("./models/userModel");
 
 const server=http.createServer(app);
 
@@ -28,10 +30,21 @@ io.on("connection",(socket)=>{
 
 */
 
-io.on("connection",(socket)=>{
-    console.log("A user logged in now");
+io.on("connection",async(socket)=>{
     console.log(socket.id);
     io.emit("welcome-message",`${socket.id} joined the chat`);
+
+    //Extracting out the user ID from the socket that is currently connected
+    const user_id = socket.handshake.query["user_id"];
+
+    console.log(`User connected ${socket.id}`);
+
+    if (Boolean(user_id)) {
+        await User.findByIdAndUpdate(user_id, {
+        socketID: socket.id,
+        status: "Online",
+        });
+    }
     //socket.emit("message","Welcome to chat app");
     //socket.broadcast.emit("user_online",`${socket.id}`);
     //io.emit("load_online_frnds",io.engine.clientsCount);
@@ -40,6 +53,30 @@ io.on("connection",(socket)=>{
     //     console.log(`${socket.id} left the chat`);
     //     socket.emit("disconnection_process",`${socket.id} left the chat`);
     // })
+
+    socket.on("send-friend-request", async(data)=>{
+        console.log(data);
+        const sender = await User.findById(data.sender).select("name socketID");
+        const receiver = await User.findById(data.receiver).select("name socketID");
+
+        console.log(sender, receiver);
+
+        await FriendRequest.create({
+            sender: data.sender,
+            receiver: data.receiver,
+        });
+
+        io.to(receiver?.socketID).emit("new-friend-request", {
+            message: "New friend request received",
+            sender: sender.name
+        });
+
+        io.to(sender?.socketID).emit("friend-request-sent", {
+            message: "Request Sent successfully!",
+            receiver: receiver.name
+        });
+
+    })
 
     socket.on("disconnect", (reason) => {
         console.log("User left the chat");
