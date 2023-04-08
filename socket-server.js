@@ -80,7 +80,7 @@ io.on("connection",async(socket)=>{
 
 
     socket.on("accept-friend-request", async (data) => {
-        // accept friend request => add ref of each other in friends array
+       
         console.log(data);
         const request_doc = await FriendRequest.findOne({sender:data.sender, receiver:data.profileID});
         const send_doc=await FriendRequest.findOne({sender:data.profileID, receiver:data.sender});
@@ -112,6 +112,30 @@ io.on("connection",async(socket)=>{
             message: "Friend Request Accepted",
             senderID:data.sender,
             receiverID:data.profileID
+            });
+        }
+    });
+
+    socket.on("decline-friend-request",async(data)=>{
+        const request_doc = await FriendRequest.findOne({sender:data.sender, receiver:data.profileID});
+        const send_doc=await FriendRequest.findOne({sender:data.profileID, receiver:data.sender});
+        if(request_doc){
+            const sender = await User.findById(request_doc.sender);
+            const receiver = await User.findById(request_doc.receiver);
+            await FriendRequest.findByIdAndDelete(request_doc._id);
+            if(send_doc)
+                await FriendRequest.findByIdAndDelete(send_doc._id);
+        
+        
+
+            io.to(sender?.socketID).emit("request-declined", {
+                message: `Friend Request Declined from ${data.name}`,
+
+            });
+            io.to(receiver?.socketID).emit("request-declined", {
+                message: "Friend Request Declined",
+                senderID:data.sender,
+                receiverID:data.profileID
             });
         }
     });
