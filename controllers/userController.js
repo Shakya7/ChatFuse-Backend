@@ -45,6 +45,7 @@ exports.addFriend=async(req,res)=>{
 exports.findUsers=async(req,res)=>{
     try{
         let users=[];
+        let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email");
         const regex = new RegExp(req.body.searchTerm, 'i');
         if(req.body.type==="email"){
             users=await User.find({
@@ -56,6 +57,16 @@ exports.findUsers=async(req,res)=>{
                 name:{$regex:regex}
             }).select("name email")
         }
+
+        console.log(friends.friends);
+        console.log(users);
+
+        //state.searchedUsers.filter((user)=>!action.payload.some(friend => friend._id.toString() === user._id.toString()));
+        users=users.filter((user)=>!friends.friends.some(friend=>friend._id.toString()===user._id.toString()));
+
+        //Filtering out the own record
+        users=users.filter((user)=>user._id.toString()!==req.body.profileID);
+
         res.status(200).json({
             status:"success",
             users
@@ -93,6 +104,22 @@ exports.getUsersWhoSentRequests=async(req, res)=>{
         res.status(200).json({
             status:"success",
             users
+        })
+    }catch(err){
+        res.status(400).json({
+            status:"failed",
+            message: err.message
+        })
+    }
+}
+
+exports.getFriends=async(req,res)=>{
+    try{
+        let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email");
+        console.log(friends.friends);
+        res.status(200).json({
+            status:"success",
+            friends:friends.friends
         })
     }catch(err){
         res.status(400).json({

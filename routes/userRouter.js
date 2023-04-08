@@ -8,5 +8,6 @@ router.route("/getProfileData/:id").get(authController.protectRouteWithJWT, user
 router.route("/getUsers").post(userController.findUsers);
 router.route("/getFriendRequestedUsers").post(userController.getFriendRequestedUsers);
 router.route("/getUsersWhoSentRequests").post(userController.getUsersWhoSentRequests);
+router.route("/getFriends").post(userController.getFriends);
 
 module.exports=router;

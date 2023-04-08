@@ -76,7 +76,47 @@ io.on("connection",async(socket)=>{
             receiver: receiver.name
         });
 
-    })
+    });
+
+
+    socket.on("accept-friend-request", async (data) => {
+        // accept friend request => add ref of each other in friends array
+        console.log(data);
+        const request_doc = await FriendRequest.findOne({sender:data.sender, receiver:data.profileID});
+        const send_doc=await FriendRequest.findOne({sender:data.profileID, receiver:data.sender});
+    
+        console.log(request_doc);
+        console.log(send_doc);
+
+        if(request_doc){
+            const sender = await User.findById(request_doc.sender);
+            const receiver = await User.findById(request_doc.receiver);
+        
+            sender.friends.push(request_doc.receiver);
+            receiver.friends.push(request_doc.sender);
+        
+            await receiver.save({ new: true, validateModifiedOnly: true });
+            await sender.save({ new: true, validateModifiedOnly: true });
+        
+            await FriendRequest.findByIdAndDelete(request_doc._id);
+            if(send_doc)
+                await FriendRequest.findByIdAndDelete(send_doc._id);
+        
+        
+            // emit event request accepted to both
+            io.to(sender?.socketID).emit("request-accepted", {
+            message: "Friend Request Accepted",
+
+            });
+            io.to(receiver?.socketID).emit("request-accepted", {
+            message: "Friend Request Accepted",
+            senderID:data.sender,
+            receiverID:data.profileID
+            });
+        }
+    });
+
+
 
     socket.on("disconnect", (reason) => {
         console.log("User left the chat");
