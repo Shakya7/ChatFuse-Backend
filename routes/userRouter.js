@@ -9,5 +9,6 @@ router.route("/getUsers").post(userController.findUsers);
 router.route("/getFriendRequestedUsers").post(userController.getFriendRequestedUsers);
 router.route("/getUsersWhoSentRequests").post(userController.getUsersWhoSentRequests);
 router.route("/getFriends").post(userController.getFriends);
+router.route("/checkIDPartofFriends/:id").post(userController.checkIDPartofFriends);
 
 module.exports=router;

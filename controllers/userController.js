@@ -45,7 +45,7 @@ exports.addFriend=async(req,res)=>{
 exports.findUsers=async(req,res)=>{
     try{
         let users=[];
-        let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email");
+        let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email status");
         const regex = new RegExp(req.body.searchTerm, 'i');
         if(req.body.type==="email"){
             users=await User.find({
@@ -115,12 +115,32 @@ exports.getUsersWhoSentRequests=async(req, res)=>{
 
 exports.getFriends=async(req,res)=>{
     try{
-        let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email");
+        let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email status");
         console.log(friends.friends);
         res.status(200).json({
             status:"success",
             friends:friends.friends
         })
+    }catch(err){
+        res.status(400).json({
+            status:"failed",
+            message: err.message
+        })
+    }
+}
+
+exports.checkIDPartofFriends=async(req,res)=>{
+    try{
+        const user=await User.findOne({ _id: req.body.profileID}).populate("friends","name email status");
+        if(user.friends.filter(frnd=>frnd._id.toString()===req.params.id).length){
+            res.status(200).json({
+                status:"true"
+            })
+        }
+        else
+            res.status(200).json({
+                status:"false"
+            })
     }catch(err){
         res.status(400).json({
             status:"failed",

@@ -46,7 +46,8 @@ const userSchema=new mongoose.Schema({
 
     status:{
         type:String,
-        enum:["Online","Offline"]
+        enum:["Online","Offline"],
+        default:"Offline"
     },
     servers:[{
         type:mongoose.Schema.Types.ObjectId,

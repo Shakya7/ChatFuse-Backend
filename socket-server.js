@@ -53,6 +53,9 @@ io.on("connection",async(socket)=>{
     //     console.log(`${socket.id} left the chat`);
     //     socket.emit("disconnection_process",`${socket.id} left the chat`);
     // })
+    socket.broadcast.emit("friend-connected",{
+        id:user_id      
+    })
 
     socket.on("send-friend-request", async(data)=>{
         console.log(data);
@@ -142,10 +145,17 @@ io.on("connection",async(socket)=>{
 
 
 
-    socket.on("disconnect", (reason) => {
+    socket.on("disconnect", async(reason) => {
         console.log("User left the chat");
         console.log(socket.id);
         //socket.broadcast.emit("left_message",`${socket.id} left the chat!!!!!`);
+        await User.findByIdAndUpdate(user_id, {
+            socketID: "",
+            status: "Offline",
+        });
+        socket.broadcast.emit("friend-disconnected",{
+            id:user_id
+        })
         
     });
 
