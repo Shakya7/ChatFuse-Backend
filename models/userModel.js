@@ -15,6 +15,11 @@ const userSchema=new mongoose.Schema({
         unique:[true, "Please enter a unique email address"]
     },
 
+    conversations:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Conversation"
+    }],
+
     pinnedMessages:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Conversation"
