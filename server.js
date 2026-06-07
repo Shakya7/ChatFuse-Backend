@@ -2,9 +2,9 @@ const server=require("./socket-server");
 const mongoose=require("mongoose");
 
 
-function connectDB(){
+async function connectDB(){
     try{
-        mongoose.connect(process.env.DB_CONNECTION.replace("<username>",process.env.DB_USERNAME).replace("<password>",process.env.DB_PASSWORD).replace("myDatabase",process.env.DB_NAME),{
+        await mongoose.connect(process.env.DB_CONNECTION.replace("<db_username>",process.env.DB_USERNAME).replace("<db_password>",process.env.DB_PASSWORD),{
             useNewUrlParser: true,
             useUnifiedTopology:true
         });
@@ -19,6 +19,6 @@ function connectDB(){
 
 
 server.listen(process.env.PORT || 4000,()=>{
-    console.log("Server started...");
+    console.log("Server started...", process.env.PORT);
     connectDB();
 })
