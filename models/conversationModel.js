@@ -8,7 +8,7 @@ const conversationSchema=new mongoose.Schema({
 
     groupChat:{type:Boolean,default:false},
 
-    latestMessage:{type:mongoose.Schema.Types.ObjectId},
+    latestMessage:{type:mongoose.Schema.Types.ObjectId, ref:"Message"},
 
     groupAdmin:[{type:mongoose.Schema.Types.ObjectId,ref:"User"}],
     

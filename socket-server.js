@@ -159,6 +159,90 @@ io.on("connection",async(socket)=>{
         
     });
 
+    // Socket event for sending messages in real-time
+    socket.on("send-message", async(data) => {
+        try {
+            console.log("Message received:", data);
+            const { conversationId, recipientId, message } = data;
+
+            // Get recipient's socket ID
+            const recipient = await User.findById(recipientId).select("socketID");
+            
+            if (recipient?.socketID) {
+                // Emit message to recipient
+                io.to(recipient.socketID).emit("receive-message", {
+                    conversationId,
+                    message,
+                    senderId: user_id,
+                    timestamp: new Date()
+                });
+            }
+
+            // Also emit back to sender to confirm delivery
+            socket.emit("message-sent", {
+                conversationId,
+                message,
+                timestamp: new Date()
+            });
+        } catch (err) {
+            console.error("Send message error:", err.message);
+            socket.emit("message-error", {
+                error: err.message
+            });
+        }
+    });
+
+    // Socket event for typing indicator
+    socket.on("typing", async(data) => {
+        try {
+            const { conversationId, recipientId } = data;
+            const recipient = await User.findById(recipientId).select("socketID");
+            
+            if (recipient?.socketID) {
+                io.to(recipient.socketID).emit("user-typing", {
+                    conversationId,
+                    senderId: user_id
+                });
+            }
+        } catch (err) {
+            console.error("Typing error:", err.message);
+        }
+    });
+
+    // Socket event for stop typing
+    socket.on("stop-typing", async(data) => {
+        try {
+            const { conversationId, recipientId } = data;
+            const recipient = await User.findById(recipientId).select("socketID");
+            
+            if (recipient?.socketID) {
+                io.to(recipient.socketID).emit("user-stop-typing", {
+                    conversationId,
+                    senderId: user_id
+                });
+            }
+        } catch (err) {
+            console.error("Stop typing error:", err.message);
+        }
+    });
+
+    // Socket event for marking messages as read
+    socket.on("mark-message-read", async(data) => {
+        try {
+            const { conversationId, recipientId } = data;
+            const recipient = await User.findById(recipientId).select("socketID");
+            
+            if (recipient?.socketID) {
+                io.to(recipient.socketID).emit("message-read-receipt", {
+                    conversationId,
+                    readBy: user_id
+                });
+            }
+        } catch (err) {
+            console.error("Mark read error:", err.message);
+        }
+    });
+
     // socket.on("load_online_frnds",(data)=>{
     //     console.log(data);
     // })

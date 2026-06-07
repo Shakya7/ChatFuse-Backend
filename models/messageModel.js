@@ -1,17 +1,20 @@
 const mongoose=require("mongoose");
 
 const messageSchema=new mongoose.Schema({
-    sender:{type:mongoose.Schema.Types.ObjectId, ref:"User"},
+    sender:{type:mongoose.Schema.Types.ObjectId, ref:"User", required:true},
 
     content: {
         type:String,
-        format:{
-            type:"String",
-            enum:["text","media","doc","link"]
-        }
+        required:true
     },
 
-    chatWindow:{type:mongoose.Schema.Types.ObjectId, ref:"Conversation"},
+    format:{
+        type:String,
+        enum:["text","media","doc","link"],
+        default:"text"
+    },
+
+    chatWindow:{type:mongoose.Schema.Types.ObjectId, ref:"Conversation", required:true},
 
     readBy:[{type:mongoose.Schema.Types.ObjectId, ref:"User"}],
     

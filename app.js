@@ -4,6 +4,7 @@ const cors=require("cors");
 const dotenv=require("dotenv");
 const authRouter=require("./routes/authRouter");
 const userRouter=require("./routes/userRouter");
+const chatRouter=require("./routes/chatRouter");
 
 dotenv.config({path:".env"});
 
@@ -36,6 +37,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/connect",authRouter);
 app.use("/api/v1/users",userRouter);
+app.use("/api/v1/chat",chatRouter);
 
 
 app.use("/",(req,res)=>{

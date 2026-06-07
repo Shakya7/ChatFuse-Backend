@@ -96,7 +96,7 @@ exports.protectRouteWithJWT=async(req,res,next)=>{
     const user=await User.findById({_id:decoded.id});
     if(!user)
         return next("No user found! Please signup first...");
-    res.user=user;
+    req.user=user;
     next();
     }catch(err){
         res.status(400).json({
