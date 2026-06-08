@@ -134,16 +134,16 @@ exports.checkIDPartofFriends=async(req,res)=>{
         const user=await User.findOne({ _id: req.body.profileID}).populate("friends","name email status");
         if(user.friends.filter(frnd=>frnd._id.toString()===req.params.id).length){
             res.status(200).json({
-                status:"true"
+                status: true
             })
         }
         else
             res.status(200).json({
-                status:"false"
+                status: false
             })
     }catch(err){
         res.status(400).json({
-            status:"failed",
+            status: false,
             message: err.message
         })
     }

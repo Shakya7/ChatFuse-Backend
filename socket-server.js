@@ -3,6 +3,7 @@ const app=require("./app");
 const http=require("http");
 const FriendRequest=require("./models/friendRequestModel");
 const User=require("./models/userModel");
+const mongoose = require("mongoose");
 
 const server=http.createServer(app);
 
@@ -39,23 +40,19 @@ io.on("connection",async(socket)=>{
 
     console.log(`User connected ${socket.id}`);
 
-    if (Boolean(user_id)) {
-        await User.findByIdAndUpdate(user_id, {
-        socketID: socket.id,
-        status: "Online",
-        });
+    if (user_id && user_id !== "undefined" && mongoose.Types.ObjectId.isValid(user_id)) {
+        try {
+            await User.findByIdAndUpdate(user_id, {
+                socketID: socket.id,
+                status: "Online",
+            });
+            socket.broadcast.emit("friend-connected", {
+                id: user_id
+            });
+        } catch (err) {
+            console.error("Error setting user status Online:", err.message);
+        }
     }
-    //socket.emit("message","Welcome to chat app");
-    //socket.broadcast.emit("user_online",`${socket.id}`);
-    //io.emit("load_online_frnds",io.engine.clientsCount);
-
-    // socket.on("disconnecting",(reason)=>{
-    //     console.log(`${socket.id} left the chat`);
-    //     socket.emit("disconnection_process",`${socket.id} left the chat`);
-    // })
-    socket.broadcast.emit("friend-connected",{
-        id:user_id      
-    })
 
     socket.on("send-friend-request", async(data)=>{
         console.log(data);
@@ -148,15 +145,19 @@ io.on("connection",async(socket)=>{
     socket.on("disconnect", async(reason) => {
         console.log("User left the chat");
         console.log(socket.id);
-        //socket.broadcast.emit("left_message",`${socket.id} left the chat!!!!!`);
-        await User.findByIdAndUpdate(user_id, {
-            socketID: "",
-            status: "Offline",
-        });
-        socket.broadcast.emit("friend-disconnected",{
-            id:user_id
-        })
-        
+        if (user_id && user_id !== "undefined" && mongoose.Types.ObjectId.isValid(user_id)) {
+            try {
+                await User.findByIdAndUpdate(user_id, {
+                    socketID: "",
+                    status: "Offline",
+                });
+                socket.broadcast.emit("friend-disconnected", {
+                    id: user_id
+                });
+            } catch (err) {
+                console.error("Error setting user status Offline:", err.message);
+            }
+        }
     });
 
     // Socket event for sending messages in real-time
