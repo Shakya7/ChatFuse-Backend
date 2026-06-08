@@ -58,8 +58,7 @@ exports.findUsers=async(req,res)=>{
             }).select("name email")
         }
 
-        console.log(friends.friends);
-        console.log(users);
+
 
         //state.searchedUsers.filter((user)=>!action.payload.some(friend => friend._id.toString() === user._id.toString()));
         users=users.filter((user)=>!friends.friends.some(friend=>friend._id.toString()===user._id.toString()));
@@ -116,7 +115,7 @@ exports.getUsersWhoSentRequests=async(req, res)=>{
 exports.getFriends=async(req,res)=>{
     try{
         let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email status");
-        console.log(friends.friends);
+
         res.status(200).json({
             status:"success",
             friends:friends.friends
