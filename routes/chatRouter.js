@@ -10,6 +10,9 @@ router.use(authController.protectRouteWithJWT);
 // Get or create conversation
 router.route("/get-or-create").post(chatController.getOrCreateConversation);
 
+// Create group conversation
+router.route("/create-group").post(chatController.createGroupConversation);
+
 // Send message
 router.route("/send-message").post(chatController.sendMessage);
 

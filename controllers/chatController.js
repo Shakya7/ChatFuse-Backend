@@ -231,3 +231,57 @@ exports.deleteMessage = async (req, res) => {
         });
     }
 };
+
+// Create a new group chat
+exports.createGroupConversation = async (req, res) => {
+    try {
+        const { groupName, memberIds } = req.body;
+        const currentUserId = req.user._id;
+
+        if (!groupName || !memberIds || !Array.isArray(memberIds) || memberIds.length === 0) {
+            return res.status(400).json({
+                status: "failed",
+                message: "Group name and at least one member are required"
+            });
+        }
+
+        // Add creator to group users
+        const uniqueUsers = Array.from(new Set([currentUserId.toString(), ...memberIds.map(id => id.toString())]));
+
+        const conversation = await Conversation.create({
+            groupChat: true,
+            chatName: groupName,
+            users: uniqueUsers,
+            groupAdmin: [currentUserId]
+        });
+
+        const populatedConversation = await Conversation.findById(conversation._id)
+            .populate("users", "name avatar socketID status")
+            .populate("latestMessage");
+
+        // Emit socket event to online members of the group
+        const io = req.app.get("io");
+        if (io) {
+            populatedConversation.users.forEach((u) => {
+                if (u._id.toString() !== currentUserId.toString() && u.socketID) {
+                    io.to(u.socketID).emit("group-created", {
+                        conversation: populatedConversation
+                    });
+                }
+            });
+        }
+
+        res.status(201).json({
+            status: "success",
+            data: {
+                conversation: populatedConversation
+            }
+        });
+    } catch (err) {
+        console.error("Create Group Conversation Error:", err.message);
+        res.status(400).json({
+            status: "failed",
+            message: err.message
+        });
+    }
+};
