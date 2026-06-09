@@ -13,6 +13,12 @@ router.route("/get-or-create").post(chatController.getOrCreateConversation);
 // Create group conversation
 router.route("/create-group").post(chatController.createGroupConversation);
 
+// Add members to group conversation
+router.route("/add-members").post(chatController.addMembersToGroup);
+
+// Leave group conversation
+router.route("/leave-group").post(chatController.leaveGroup);
+
 // Send message
 router.route("/send-message").post(chatController.sendMessage);
 
