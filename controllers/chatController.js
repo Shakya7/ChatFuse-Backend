@@ -122,7 +122,7 @@ exports.getConversation = async (req, res) => {
 
         const conversation = await Conversation.findById(conversationId)
         .populate("users", "name avatar socketID status")
-        .populate("latestMessage");
+        .populate({ path: "latestMessage", populate: { path: "sender", select: "name" } });
 
         if (!conversation) {
             return res.status(404).json({
@@ -155,7 +155,7 @@ exports.getUserConversations = async (req, res) => {
             users: userId
         })
         .populate("users", "name avatar socketID status")
-        .populate("latestMessage")
+        .populate({ path: "latestMessage", populate: { path: "sender", select: "name" } })
         .sort({ updatedAt: -1 });
 
         res.status(200).json({
@@ -257,7 +257,7 @@ exports.createGroupConversation = async (req, res) => {
 
         const populatedConversation = await Conversation.findById(conversation._id)
             .populate("users", "name avatar socketID status")
-            .populate("latestMessage");
+            .populate({ path: "latestMessage", populate: { path: "sender", select: "name" } });
 
         // Emit socket event to online members of the group
         const io = req.app.get("io");
@@ -325,7 +325,7 @@ exports.addMembersToGroup = async (req, res) => {
 
         const populatedConversation = await Conversation.findById(conversation._id)
             .populate("users", "name avatar socketID status")
-            .populate("latestMessage");
+            .populate({ path: "latestMessage", populate: { path: "sender", select: "name" } });
 
         // Emit group-updated socket event to all online members of the group
         const io = req.app.get("io");
@@ -417,7 +417,7 @@ exports.leaveGroup = async (req, res) => {
 
         const populatedConversation = await Conversation.findById(conversation._id)
             .populate("users", "name avatar socketID status")
-            .populate("latestMessage");
+            .populate({ path: "latestMessage", populate: { path: "sender", select: "name" } });
 
         // Notify remaining members via socket
         const io = req.app.get("io");
