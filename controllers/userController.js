@@ -1,137 +1,137 @@
-const User=require("../models/userModel");
-const bcrypt=require("bcryptjs");
-const jwt=require("jsonwebtoken");
-const FriendRequest=require("../models/friendRequestModel");
+const User = require("../models/userModel");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const FriendRequest = require("../models/friendRequestModel");
 
-exports.getProfileData=async(req,res)=>{
-    try{
+exports.getProfileData = async (req, res) => {
+    try {
         //const user=await User.findById(req.params.id);
         let user;
-        if(res.user)
-            user=res.user;
-        if(!user)
+        if (req.user)
+            user = req.user;
+        if (!user)
             return next("Authentication failed...please check again");
         res.status(200).json({
-            status:"success",
-            data:{
+            status: "success",
+            data: {
                 user
             }
         })
 
-    }catch(err){
+    } catch (err) {
         res.status(400).json({
-            status:"failed",
+            status: "failed",
             message: err.message
         })
     }
 }
 
 
-exports.addFriend=async(req,res)=>{
-    try{
-        const user=await User.findByIdAndUpdate(req.params.id,{
-            $push:{
-                friends:req.body
+exports.addFriend = async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(req.params.id, {
+            $push: {
+                friends: req.body
             }
-        },{new:true});
-    }catch(err){
+        }, { new: true });
+    } catch (err) {
         res.status(400).json({
-            status:"failed",
+            status: "failed",
             message: err.message
         })
     }
 }
 
-exports.findUsers=async(req,res)=>{
-    try{
-        let users=[];
-        let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email status");
+exports.findUsers = async (req, res) => {
+    try {
+        let users = [];
+        let friends = await User.findById(req.body.profileID, "friends").populate("friends", "name email status");
         const regex = new RegExp(req.body.searchTerm, 'i');
-        if(req.body.type==="email"){
-            users=await User.find({
-                email:{$regex:regex}
+        if (req.body.type === "email") {
+            users = await User.find({
+                email: { $regex: regex }
             }).select("name email")
         }
-        else{
-            users=await User.find({
-                name:{$regex:regex}
+        else {
+            users = await User.find({
+                name: { $regex: regex }
             }).select("name email")
         }
 
 
 
         //state.searchedUsers.filter((user)=>!action.payload.some(friend => friend._id.toString() === user._id.toString()));
-        users=users.filter((user)=>!friends.friends.some(friend=>friend._id.toString()===user._id.toString()));
+        users = users.filter((user) => !friends.friends.some(friend => friend._id.toString() === user._id.toString()));
 
         //Filtering out the own record
-        users=users.filter((user)=>user._id.toString()!==req.body.profileID);
+        users = users.filter((user) => user._id.toString() !== req.body.profileID);
 
         res.status(200).json({
-            status:"success",
+            status: "success",
             users
         })
 
-    }catch(err){
+    } catch (err) {
         res.status(400).json({
-            status:"failed",
+            status: "failed",
             message: err.message
         })
     }
 }
 
 // API for getting the users to whom user has sent friend requests
-exports.getFriendRequestedUsers=async(req,res)=>{
-    try{
-        let users= await FriendRequest.find({sender:req.body.profileID}).populate("receiver","name email");
+exports.getFriendRequestedUsers = async (req, res) => {
+    try {
+        let users = await FriendRequest.find({ sender: req.body.profileID }).populate("receiver", "name email");
         res.status(200).json({
-            status:"success",
+            status: "success",
             users
         })
 
-    }catch(err){
+    } catch (err) {
         res.status(400).json({
-            status:"failed",
+            status: "failed",
             message: err.message
         })
     }
 }
 
 // API for getting the users who has sent the friend requests to the user
-exports.getUsersWhoSentRequests=async(req, res)=>{
-    try{
-        let users=await FriendRequest.find({receiver:req.body.profileID}).populate("sender","name email")
+exports.getUsersWhoSentRequests = async (req, res) => {
+    try {
+        let users = await FriendRequest.find({ receiver: req.body.profileID }).populate("sender", "name email")
         res.status(200).json({
-            status:"success",
+            status: "success",
             users
         })
-    }catch(err){
+    } catch (err) {
         res.status(400).json({
-            status:"failed",
+            status: "failed",
             message: err.message
         })
     }
 }
 
-exports.getFriends=async(req,res)=>{
-    try{
-        let friends=await User.findById(req.body.profileID,"friends").populate("friends","name email status");
+exports.getFriends = async (req, res) => {
+    try {
+        let friends = await User.findById(req.body.profileID, "friends").populate("friends", "name email status");
 
         res.status(200).json({
-            status:"success",
-            friends:friends.friends
+            status: "success",
+            friends: friends.friends
         })
-    }catch(err){
+    } catch (err) {
         res.status(400).json({
-            status:"failed",
+            status: "failed",
             message: err.message
         })
     }
 }
 
-exports.checkIDPartofFriends=async(req,res)=>{
-    try{
-        const user=await User.findOne({ _id: req.body.profileID}).populate("friends","name email status");
-        if(user.friends.filter(frnd=>frnd._id.toString()===req.params.id).length){
+exports.checkIDPartofFriends = async (req, res) => {
+    try {
+        const user = await User.findOne({ _id: req.body.profileID }).populate("friends", "name email status");
+        if (user.friends.filter(frnd => frnd._id.toString() === req.params.id).length) {
             res.status(200).json({
                 status: true
             })
@@ -140,7 +140,7 @@ exports.checkIDPartofFriends=async(req,res)=>{
             res.status(200).json({
                 status: false
             })
-    }catch(err){
+    } catch (err) {
         res.status(400).json({
             status: false,
             message: err.message
